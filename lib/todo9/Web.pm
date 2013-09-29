@@ -9,6 +9,7 @@ use Digest::SHA;
 #use DBD::mysql;
 use DBIx::Sunny;
 use Data::Dumper;
+use JSON qw/decode_json/;
 
 sub dbh {
     my $self = shift;
@@ -40,7 +41,7 @@ filter 'set_title' => sub {
     }
 };
 
-get '/' => sub {
+get '/api/todos' => sub {
     my ( $self, $c )  = @_;
     my $result = $c->req->validator([
         'offset' => {
@@ -52,108 +53,39 @@ get '/' => sub {
     ]);
     $c->halt(403) if $result->has_error;
     my ($entries,$has_next) = $self->entry_list($result->valid('offset'));
-    $c->render('index.tx', {
+    $c->render_json({
         offset => $result->valid('offset'),
         entries => $entries,
         has_next => $has_next,
     });
 };
 
-get '/edit' => sub {
+router 'PUT' => '/api/todos/:id' => sub {
     my ( $self, $c )  = @_;
+    my $id = $c->args->{id};
+    my $todo = decode_json($c->req->content)->{todo};
+    warn $todo;
 
-    $c->render('edit.tx', {
-
-    });
+    my $id = $self->edit_entry($id, $todo);   
 };
 
-post '/edit' => sub {
+post '/api/todos' => sub {
     my ( $self, $c )  = @_;
-    my $result = $c->req->validator([
-	'id' => {
-	    rule => [
-		['NOT_NULL', 'empty id'],
-    	    ],
-    	},
-    	'body' => {
-	    rule => [
-		['NOT_NULL', 'empty body'],
-	    ],
-    	}
-    ]);
-    $c->halt(403) if $result->has_error;
+    my $nickname = decode_json($c->req->content)->{todo}->{nickname};
+    my $body = decode_json($c->req->content)->{todo}->{body};
+    warn $body;
+    warn $nickname;
 
-    my $id = $result->valid('id');
-    my $body = $result->valid('body');
+    my $id = $self->add_entry($body, $nickname);  
 
-    $c->render('edit.tx', {
-        # offset => $result->valid('offset'),
-        id => $id,
-        body => $body,
-    });
 };
 
-post '/create' => sub {
+
+router 'DELETE' => '/api/todos/:id' => sub {
     my ( $self, $c )  = @_;
-    my $result = $c->req->validator([
-        'body' => {
-            rule => [
-                ['NOT_NULL','empty body'],
-            ],
-        },
-        'nickname' => {
-            default => 'anonymous',
-            rule => [
-                ['NOT_NULL','empty nickname'],
-            ],
-        }
-    ]);
-    if ( $result->has_error ) {
-        return $c->render_json({ error => 1, messages => $result->errors });
-    }
-    my $id = $self->add_entry(map {$result->valid($_)} qw/body nickname/);
-    $c->render_json({ error => 0, location => $c->req->uri_for("/")->as_string });
-};
+    my $id = $c->args->{id};
 
-post '/update' => sub {
-    my ( $self, $c )  = @_;
-    my $result = $c->req->validator([
-	'id' => {
-	    rule => [
-		['NOT_NULL', 'empty id'],
-    	    ],
-    	},
-    	'body' => {
-	    rule => [
-		['NOT_NULL', 'empty body'],
-	    ],
-    	}
-    ]);
-    $c->halt(403) if $result->has_error;
-
-    if ( $result->has_error ) {
-        return $c->render_json({ error => 1, messages => $result->errors });
-    }
-    my $id = $self->edit_entry(map {$result->valid($_)} qw/id body/);
-    $c->redirect('/');
-};
-
-post '/delete' => sub {
-    my ( $self, $c )  = @_;
-    my $result = $c->req->validator([
-	'id' => {
-	    rule => [
-		['NOT_NULL', 'empty id'],
-    	    ],
-    	}
-    ]);
-    $c->halt(403) if $result->has_error;
-
-    if ( $result->has_error ) {
-        return $c->render_json({ error => 1, messages => $result->errors });
-    }
-    my $id = $self->delete_entry(map {$result->valid($_)} qw/id/);
-    $c->redirect('/');
+    my $id = $self->delete_entry($id);
 };
 
 get '/json' => sub {
