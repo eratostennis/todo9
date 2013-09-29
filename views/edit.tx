@@ -1,0 +1,25 @@
+: cascade base
+: around content -> {
+
+<form id="edit-form" method="post" action="<: $c.req.uri_for('/update') :>">
+<h2>Edit memo</h2>
+
+<div class="alert-message error hide">
+<p>System Error! <em>try again</em>.</p>
+</div>
+
+<fieldset>
+<div class="clearfix">
+<label>body</label>
+<div class="input">
+<textarea class="span9" name="body" rows="10" ><: $body :></textarea>
+</div>
+</div>
+
+<div class="actions">
+<input type="hidden" value="<: $id :>" name="id" />
+<input type="submit" class="btn primary" value="Submit" />
+</div>
+</fieldset>
+</form>
+: }

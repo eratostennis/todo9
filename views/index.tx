@@ -1,23 +1,5 @@
 : cascade base
 : around content -> {
-: for $entries -> $entry {
-<h2><a href="<: $c.req.uri_for('/'~$entry.id) :>"><: $c.req.uri_for('/'~$entry.id) :></a></h2>
-<pre class="prettyprint linenums:1">
-<: $entry.body :>
-</pre>
-<p><: $entry.created_at :> by <: $entry.nickname :></p>
-: }
-
-<div class="pagination">
-<ul>
-: if $offset > 0 {
-<li><a href="<: $c.req.uri_for('/',[offset => $offset-10 >= 0 ? $offset - 10 : 0]) :>">Prev</a></li>
-: }
-: if $has_next {
-<li><a href="<: $c.req.uri_for('/',[offset => $offset+10]) :>">Next</a></li>
-: }
-</ul>
-</div>
 
 <form id="create-form" method="post" action="<: $c.req.uri_for('/create') :>">
 <h2>New Paste</h2>
@@ -31,7 +13,6 @@
 <label>body</label>
 <div class="input">
 <textarea class="span9" name="body" rows="10"></textarea>
-<span class="help-block">fill your code</span>
 </div>
 </div>
 
@@ -39,7 +20,6 @@
 <label>nickname</label>
 <div class="input">
 <input class="xlarge" name="nickname" />
-<span class="help-block">your name</span>
 </div>
 </div>
 
@@ -48,4 +28,32 @@
 </div>
 </fieldset>
 </form>
+
+: for $entries -> $entry {
+<pre class="prettyprint linenums:1">
+
+<: $entry.body :>
+</pre>
+<p><: $entry.created_at :> <!--by <: $entry.nickname :>--></p>
+<form id="create-form" method="post" action="<: $c.req.uri_for('/edit') :>">
+<input type="hidden" value="<: $entry.id :>" name="id" />
+<input type="hidden" value="<: $entry.body :>" name="body"/>
+<input type="submit" class="btn primary" value="Edit" />
+</form>
+<form id="create-form" method="post" action="<: $c.req.uri_for('/delete') :>">
+<input type="hidden" value="<: $entry.id :>" name="id" />
+<input type="submit" class="btn primary" value="Delete" />
+</form>
+: }
+<div class="pagination">
+<ul>
+: if $offset > 0 {
+<li><a href="<: $c.req.uri_for('/',[offset => $offset-10 >= 0 ? $offset - 10 : 0]) :>">Prev</a></li>
+: }
+: if $has_next {
+<li><a href="<: $c.req.uri_for('/',[offset => $offset+10]) :>">Next</a></li>
+: }
+</ul>
+</div>
+
 : }

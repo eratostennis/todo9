@@ -8,10 +8,10 @@ use Digest::SHA;
 #use DBI;
 #use DBD::mysql;
 use DBIx::Sunny;
+use Data::Dumper;
 
 sub dbh {
     my $self = shift;
-    #my $db = $self->root_dir .'/kossytodo.db';
     $self->{_dbh} ||= DBIx::Sunny->connect("dbi:mysql:dbname=todo9",'denaexe','denadena',{
         Callbacks => {
             connected => sub {
@@ -59,6 +59,40 @@ get '/' => sub {
     });
 };
 
+get '/edit' => sub {
+    my ( $self, $c )  = @_;
+
+    $c->render('edit.tx', {
+
+    });
+};
+
+post '/edit' => sub {
+    my ( $self, $c )  = @_;
+    my $result = $c->req->validator([
+	'id' => {
+	    rule => [
+		['NOT_NULL', 'empty id'],
+    	    ],
+    	},
+    	'body' => {
+	    rule => [
+		['NOT_NULL', 'empty body'],
+	    ],
+    	}
+    ]);
+    $c->halt(403) if $result->has_error;
+
+    my $id = $result->valid('id');
+    my $body = $result->valid('body');
+
+    $c->render('edit.tx', {
+        # offset => $result->valid('offset'),
+        id => $id,
+        body => $body,
+    });
+};
+
 post '/create' => sub {
     my ( $self, $c )  = @_;
     my $result = $c->req->validator([
@@ -81,6 +115,46 @@ post '/create' => sub {
     $c->render_json({ error => 0, location => $c->req->uri_for("/")->as_string });
 };
 
+post '/update' => sub {
+    my ( $self, $c )  = @_;
+    my $result = $c->req->validator([
+	'id' => {
+	    rule => [
+		['NOT_NULL', 'empty id'],
+    	    ],
+    	},
+    	'body' => {
+	    rule => [
+		['NOT_NULL', 'empty body'],
+	    ],
+    	}
+    ]);
+    $c->halt(403) if $result->has_error;
+
+    if ( $result->has_error ) {
+        return $c->render_json({ error => 1, messages => $result->errors });
+    }
+    my $id = $self->edit_entry(map {$result->valid($_)} qw/id body/);
+    $c->redirect('/');
+};
+
+post '/delete' => sub {
+    my ( $self, $c )  = @_;
+    my $result = $c->req->validator([
+	'id' => {
+	    rule => [
+		['NOT_NULL', 'empty id'],
+    	    ],
+    	}
+    ]);
+    $c->halt(403) if $result->has_error;
+
+    if ( $result->has_error ) {
+        return $c->render_json({ error => 1, messages => $result->errors });
+    }
+    my $id = $self->delete_entry(map {$result->valid($_)} qw/id/);
+    $c->redirect('/');
+};
 
 get '/json' => sub {
     my ( $self, $c )  = @_;
@@ -104,6 +178,29 @@ sub add_entry {
     $self->dbh->query(
         q{INSERT INTO entry (id,nickname,body,created_at) VALUES ( ?, ?, ?, now() )},
         $id, $nickname, $body
+    );
+    return $id;
+}
+
+sub delete_entry {
+    my $self = shift;
+   my ($id) = @_;
+    #$id = '' if ! defined $id;
+    #die $id;
+    $self->dbh->query(
+        q{DELETE FROM entry WHERE id = ? },
+        $id
+    );
+    return $id;
+}
+
+sub edit_entry {
+    my $self = shift;
+    my (  $id, $body ) = @_;
+    $body = '' if ! defined $body;
+    $self->dbh->query(
+        q{UPDATE entry SET body = ?, created_at = now() WHERE id = ? },
+        $body, $id
     );
     return $id;
 }
