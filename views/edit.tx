@@ -2,7 +2,7 @@
 : around content -> {
 
 <form id="edit-form" method="post" action="<: $c.req.uri_for('/update') :>">
-<h2>Edit memo</h2>
+<h2>Edit Content</h2>
 
 <div class="alert-message error hide">
 <p>System Error! <em>try again</em>.</p>
@@ -10,7 +10,7 @@
 
 <fieldset>
 <div class="clearfix">
-<label>body</label>
+<label>TODO Content</label>
 <div class="input">
 <textarea class="span9" name="body" rows="10" ><: $body :></textarea>
 </div>

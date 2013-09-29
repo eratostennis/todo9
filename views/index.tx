@@ -2,7 +2,7 @@
 : around content -> {
 
 <form id="create-form" method="post" action="<: $c.req.uri_for('/create') :>">
-<h2>New Paste</h2>
+<h2>TODO List</h2>
 
 <div class="alert-message error hide">
 <p>System Error! <em>try again</em>.</p>
@@ -10,7 +10,7 @@
 
 <fieldset>
 <div class="clearfix">
-<label>body</label>
+<label>TODO Content</label>
 <div class="input">
 <textarea class="span9" name="body" rows="10"></textarea>
 </div>
