@@ -1,0 +1,45 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" 
+    android:orientation="vertical">
+    
+    	    
+    <TextView
+        android:id="@+id/new_title"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:text="新規作成" />
+   　
+   　<EditText
+        android:id="@+id/newbody"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="todo content" />
+   　
+   <Button 
+       	android:id="@+id/register_btn"
+       	android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="登録" />
+    
+    <TextView
+        android:id="@+id/db"
+        android:layout_marginTop="40dp"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:text="TODO LIST" />
+    
+	<TableLayout 
+	    android:id="@+id/tableLayout"
+	    android:layout_width="fill_parent"
+	    android:layout_height="fill_parent"
+	    android:shrinkColumns="0,1"> 
+	
+	</TableLayout>
+	
+</LinearLayout>
